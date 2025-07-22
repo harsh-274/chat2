@@ -4,23 +4,17 @@ import User from "../model/UserModel.js";
 
 export const createChannel = async (request, response, next) => {
   try {
-    const { name, members } = request.body;
+    const { name } = request.body;
     const userId = request.userId;
     const admin = await User.findById(userId);
     if (!admin) {
       return response.status(400).json({ message: "Admin user not found." });
     }
 
-    const validMembers = await User.find({ _id: { $in: members } });
-    if (validMembers.length !== members.length) {
-      return response
-        .status(400)
-        .json({ message: "Some members are not valid users." });
-    }
-
+    // Create channel with no members initially, or with creator as first member
     const newChannel = new Channel({
       name,
-      members,
+      members: [], // public channel, users join later
       admin: userId,
     });
 
@@ -67,6 +61,38 @@ export const getChannelMessages = async (req, res, next) => {
     return res.status(200).json({ messages });
   } catch (error) {
     console.error("Error getting channel messages:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Get all channels (public listing)
+export const getAllChannels = async (req, res) => {
+  try {
+    const channels = await Channel.find({}).sort({ updatedAt: -1 });
+    return res.status(200).json({ channels });
+  } catch (error) {
+    console.error("Error getting all channels:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Join a channel (add user to members array)
+export const joinChannel = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { channelId } = req.params;
+    const channel = await Channel.findById(channelId);
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+    // Only add if not already a member
+    if (!channel.members.some((id) => id.equals(userId))) {
+      channel.members.push(userId);
+      await channel.save();
+    }
+    return res.status(200).json({ channel });
+  } catch (error) {
+    console.error("Error joining channel:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };

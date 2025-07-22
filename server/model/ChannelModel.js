@@ -9,7 +9,7 @@ const channelSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users",
-      required: true,
+      required: false,
     },
   ],
   admin: {

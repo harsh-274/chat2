@@ -4,12 +4,14 @@ import ProfileInfo from "./components/profile-info";
 import apiClient from "@/lib/api-client";
 import {
   GET_CONTACTS_WITH_MESSAGES_ROUTE,
-  GET_USER_CHANNELS,
+  GET_ALL_CHANNELS,
+  JOIN_CHANNEL,
 } from "@/lib/constants";
 import { useEffect } from "react";
 import { useAppStore } from "@/store";
 import NewDM from "./components/new-dm/new-dm";
 import CreateChannel from "./components/create-channel/create-channel";
+import { Button } from "@/components/ui/button";
 
 const ContactsContainer = () => {
   const {
@@ -17,6 +19,10 @@ const ContactsContainer = () => {
     directMessagesContacts,
     channels,
     setChannels,
+    userInfo,
+    setSelectedChatType,
+    setSelectedChatData,
+    setSelectedChatMessages,
   } = useAppStore();
 
   useEffect(() => {
@@ -33,7 +39,7 @@ const ContactsContainer = () => {
 
   useEffect(() => {
     const getChannels = async () => {
-      const response = await apiClient.get(GET_USER_CHANNELS, {
+      const response = await apiClient.get(GET_ALL_CHANNELS, {
         withCredentials: true,
       });
       if (response.data.channels) {
@@ -42,6 +48,24 @@ const ContactsContainer = () => {
     };
     getChannels();
   }, [setChannels]);
+
+  // Helper to check if user is a member
+  const isMember = (channel) =>
+    channel.members && channel.members.some((m) => m === userInfo.id || (m._id && m._id === userInfo.id));
+
+  // Join channel handler
+  const joinChannel = async (channelId) => {
+    const response = await apiClient.post(
+      `${JOIN_CHANNEL}/${channelId}`,
+      {},
+      { withCredentials: true }
+    );
+    if (response.status === 200 && response.data.channel) {
+      setChannels((prev) =>
+        prev.map((ch) => (ch._id === channelId ? response.data.channel : ch))
+      );
+    }
+  };
 
   return (
     <div className="relative md:w-[35vw] lg:w-[30vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] w-full">
@@ -63,7 +87,32 @@ const ContactsContainer = () => {
           <CreateChannel />
         </div>
         <div className="max-h-[37vh] overflow-y-auto scrollbar-hidden pb-5">
-          <ContactList contacts={channels} isChannel />
+          {channels.map((channel) => {
+            const member = isMember(channel);
+            return (
+              <div
+                key={channel._id}
+                className={`flex items-center justify-between pl-10 pr-4 py-2 hover:bg-[#f1f1f111] transition-all duration-300 ${member ? 'cursor-pointer' : ''}`}
+                style={{ opacity: member ? 1 : 0.5 }}
+                onClick={() => {
+                  if (member) {
+                    setSelectedChatType("channel");
+                    setSelectedChatData(channel);
+                    setSelectedChatMessages([]);
+                  }
+                }}
+              >
+                <div className="flex-1">
+                  <span>{channel.name}</span>
+                </div>
+                {!member ? (
+                  <Button size="sm" onClick={e => { e.stopPropagation(); joinChannel(channel._id); }}>
+                    Join
+                  </Button>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       </div>
       <ProfileInfo />

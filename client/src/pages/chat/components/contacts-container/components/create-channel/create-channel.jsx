@@ -23,34 +23,20 @@ import { Input } from "@/components/ui/input";
 
 const CreateChannel = () => {
   const [newChannelModal, setNewChannelModal] = useState(false);
-  const [allContacts, setAllContacts] = useState([]);
-  const [selectedContacts, setSelectedContacts] = useState([]);
   const [channelName, setChannelName] = useState("");
   const socket = useSocket();
   const { addChannel } = useAppStore();
-
-  useEffect(() => {
-    const getData = async () => {
-      const response = await apiClient.get(GET_ALL_CONTACTS, {
-        withCredentials: true,
-      });
-      setAllContacts(response.data.contacts);
-    };
-    getData();
-  }, []);
 
   const createChannel = async () => {
     const response = await apiClient.post(
       CREATE_CHANNEL,
       {
         name: channelName,
-        members: selectedContacts.map((contact) => contact.value),
       },
       { withCredentials: true }
     );
     if (response.status === 201) {
       setChannelName("");
-      setSelectedContacts([]);
       setNewChannelModal(false);
       addChannel(response.data.channel);
       socket.emit("add-channel-notify", response.data.channel);
@@ -86,20 +72,6 @@ const CreateChannel = () => {
               className="rounded-lg py-6 px-4 bg-[#2c2e3b] border-none"
               value={channelName}
               onChange={(e) => setChannelName(e.target.value)}
-            />
-          </div>
-          <div>
-            <MultipleSelector
-              className="rounded-lg bg-[#2c2e3b] border-none py-2 text-white"
-              defaultOptions={allContacts}
-              placeholder="Search Contacts"
-              value={selectedContacts}
-              onChange={setSelectedContacts}
-              emptyIndicator={
-                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                  No results found.
-                </p>
-              }
             />
           </div>
           <div>
