@@ -96,3 +96,39 @@ export const joinChannel = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// Add an event to a channel
+export const addChannelEvent = async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const { title, description, time } = req.body;
+    if (!title || !time) {
+      return res.status(400).json({ message: "Title and time are required." });
+    }
+    const channel = await Channel.findById(channelId);
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+    channel.events.push({ title, description, time });
+    await channel.save();
+    return res.status(201).json({ events: channel.events });
+  } catch (error) {
+    console.error("Error adding event:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// List all events for a channel
+export const getChannelEvents = async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const channel = await Channel.findById(channelId);
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+    return res.status(200).json({ events: channel.events });
+  } catch (error) {
+    console.error("Error getting events:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};

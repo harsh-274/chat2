@@ -34,6 +34,10 @@ const messageSchema = new mongoose.Schema({
       return this.messageType === "file";
     },
   },
+  isAnonymous: {
+    type: Boolean,
+    default: false,
+  },
   timestamp: {
     type: Date,
     default: Date.now,

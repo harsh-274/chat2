@@ -20,6 +20,8 @@ export const GET_USER_CHANNELS = `${CHANNEL_ROUTES}/get-user-channels`;
 export const GET_CHANNEL_MESSAGES = `${CHANNEL_ROUTES}/get-channel-messages`;
 export const GET_ALL_CHANNELS = `${CHANNEL_ROUTES}/all`;
 export const JOIN_CHANNEL = `${CHANNEL_ROUTES}/join`;
+export const GET_CHANNEL_EVENTS = `${CHANNEL_ROUTES}/:channelId/events`;
+export const ADD_CHANNEL_EVENT = `${CHANNEL_ROUTES}/:channelId/events`;
 
 export const CONTACTS_ROTUES = "/api/contacts";
 export const SEARCH_CONTACTS_ROUTES = `${CONTACTS_ROTUES}/search`;

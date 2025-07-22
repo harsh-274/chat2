@@ -24,6 +24,13 @@ const channelSchema = new mongoose.Schema({
       required: false,
     },
   ],
+  events: [
+    {
+      title: { type: String, required: true },
+      description: { type: String },
+      time: { type: Date, required: true },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

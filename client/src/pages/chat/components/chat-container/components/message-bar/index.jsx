@@ -20,6 +20,7 @@ const MessageBar = () => {
   } = useAppStore();
   const [message, setMessage] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [anonymous, setAnonymous] = useState(false);
   const socket = useSocket();
 
   useEffect(() => {
@@ -60,9 +61,11 @@ const MessageBar = () => {
         audioUrl: undefined,
         fileUrl: undefined,
         channelId: selectedChatData._id,
+        isAnonymous: anonymous,
       });
     }
     setMessage("");
+    setAnonymous(false);
   };
 
   const handleAttachmentChange = async (event) => {
@@ -125,6 +128,17 @@ const MessageBar = () => {
           value={message}
           onChange={handleMessageChange}
         />
+        {selectedChatType === "channel" && (
+          <label className="flex items-center gap-2 text-sm text-gray-300">
+            <input
+              type="checkbox"
+              checked={anonymous}
+              onChange={e => setAnonymous(e.target.checked)}
+              className="accent-purple-600"
+            />
+            Send as anonymous
+          </label>
+        )}
         <button
           className="text-neutral-300 focus:border-none focus:outline-none focus:text-white transition-all duration-300"
           onClick={handleAttachmentClick} // Trigger the file input click
